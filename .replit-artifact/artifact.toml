@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Monika Herman – Gesundheitsberaterin"
+version = "1.0.0"
+id = "artifacts/monika-herman"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22736
+
+[services.development]
+run = "pnpm --filter @workspace/monika-herman run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/monika-herman", "run", "build" ]
+publicDir = "artifacts/monika-herman/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22736"
+BASE_PATH = "/"
