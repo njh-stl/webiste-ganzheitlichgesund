@@ -26,6 +26,8 @@ type FormValues = z.infer<typeof formSchema>;
 
 export function ContactForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -37,8 +39,28 @@ export function ContactForm() {
     },
   });
 
-  function onSubmit(_data: FormValues) {
-    setIsSubmitted(true);
+  async function onSubmit(data: FormValues) {
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error("Request failed");
+      }
+
+      setIsSubmitted(true);
+    } catch {
+      setSubmitError(
+        "Deine Nachricht konnte nicht gesendet werden. Bitte versuche es später erneut oder ruf mich direkt an.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   if (isSubmitted) {
@@ -114,8 +136,18 @@ export function ContactForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" data-testid="button-submit-contact">
-          Nachricht senden
+        {submitError && (
+          <p className="text-sm text-destructive" role="alert">
+            {submitError}
+          </p>
+        )}
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+          data-testid="button-submit-contact"
+        >
+          {isSubmitting ? "Wird gesendet…" : "Nachricht senden"}
         </Button>
       </form>
     </Form>
